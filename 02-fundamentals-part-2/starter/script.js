@@ -99,3 +99,143 @@ avgDolphins = calcAverage(85, 54, 41);
 avgKoalas = calcAverage(23, 34, 27);
 console.log(checkWinner(avgDolphins, avgKoalas));
 
+const grades = [85, 92, 78, 96, 88];
+console.log(grades);
+
+const friends = ['Michael', 'Steven', 'Peter'];
+console.log(friends);
+
+const mixed = ["Jonas", 40, false, friends];
+console.log(mixed);
+
+const year = new Array(1992, 1984, 2008, 2020);
+console.log(year);
+
+// Accessing Array Elements
+console.log(friends[0]);
+console.log(friends[1]);
+console.log(friends[2]);
+console.log(friends[4]);
+
+console.log(friends.length);
+
+friends[0] = "Jay";
+console.log(friends);
+
+const calcAge = function (birthYear) {
+    return 2025 - birthYear;
+}
+
+const ages = [calcAge(2002), calcAge(1977), calcAge(1988)];
+console.log(ages);
+
+const newLength = friends.push("Adie");
+console.log(friends);
+console.log(newLength);
+
+friends.unshift('Jaype');
+console.log(friends);
+
+// Removing elements
+// Remove last item of the list
+const popped = friends.pop();
+console.log(popped);
+
+const shifted = friends.shift();
+console.log(shifted);
+console.log(friends);
+
+// Finding an element
+console.log(friends.indexOf('Steven'));
+console.log(friends.indexOf('Mark'));
+
+// Includes
+console.log(friends.includes('Peter'));
+console.log(friends.includes('John'));
+
+// Array iterations
+
+// Traditional For Loop
+for (let i = 0; i < friends.length; i++) {
+    console.log(friends[i]);
+}
+
+friends.forEach(
+    function(friend, index) {
+        console.log(`${index + 1}: ${friend}`)
+    }
+);
+
+friends.forEach(
+    (friend, index) => {
+        console.log(`${index + 1}: ${friend}`)
+    }
+)
+
+// Practical Example
+const grades2 = [85, 92, 78, 96, 88, 69];
+let total = 0;
+
+for (let i = 0; i < grades2.length; i++) {
+    total += grades2[i];
+}
+
+const average = total / grades2.length;
+console.log(`Average grade: ${average.toFixed(2)}`);
+
+let passedCount = 0;
+grades2.forEach(grade => {
+    if (grade >= 70) passedCount++;
+});
+
+console.log(`${passedCount} out of ${grades2.length} students passed`);
+
+// Coding Challenge #2
+
+const grades3 = [78, 85, 92, 67, 88, 95, 73, 82];
+
+// Function to Calculate Average
+function calculateAverage(grades3) {
+    let total = 0;
+    grades3.forEach(grade => total += grade);
+    return total / grades3.length;
+}
+
+// Function to find highest grade
+function findHighestGrade(grades3) {
+    let highest = grades3[0];
+    grades3.forEach(grade => {
+        if (grade > highest) highest = grade;
+    });
+    return highest;
+}
+
+// Function to find lowest grade
+function findLowestGrade(grades3) {
+    let lowest = grades3[0];
+    grades3.forEach(grade => {
+        if (grade < lowest) lowest = grade;
+    });
+    return lowest;
+}
+
+// Function to count passing students
+function countPassing(grades3, passingGrade = 70) {
+    let count = 0;
+    grades3.forEach(grade => {
+        if (grade >= passingGrade) count++;
+    });
+    return count;
+}
+
+// Generate complete report
+const average2 = calculateAverage(grades3);
+const highest = findHighestGrade(grades3);
+const lowest = findLowestGrade(grades3);
+const passing = countPassing(grades3, 70);
+
+console.log("=== GRADE REPORT ===");
+console.log(`Average: ${average2.toFixed(2)}`);
+console.log(`Highest: ${highest}`);
+console.log(`Lowest: ${lowest}`);
+console.log(`Passing students: ${passing} out of ${grades3.length}`);
