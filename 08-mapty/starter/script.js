@@ -131,6 +131,39 @@ class App {
     form.addEventListener('submit', this._newWorkout.bind(this));
     // Attach event handler for wrokout type change
     inputType.addEventListener('change', this._toggleElevationField);
+
+    // Add click handling for workout list items
+    containerWorkouts.addEventListener('click', this.moveToPopUp.bind(this));
+
+    document.addEventListener('keydown', this._handleKeyDown.bind(this));
+  }
+
+  _handleKeyDown(e) {
+    if (e.key === 'Escape' && !form.classList.contains('hidden')) {
+      this._hideForm();
+      console.log('Form hidden via Escape key');
+    }
+  }
+
+  _moveToPopup(e) {
+    // Find the closes workout element from the clicked target
+    const workoutEl = e.target.closest('.workout');
+
+    if (!workoutEl) return;
+
+    // Find the workout obkect using the data-id attribute
+    const workout = this.#workouts.find (
+      work => work.id === workoutEl.dataset.id
+    );
+
+    // Move the map to the workout coordinates
+    this.#map.setView(workout.coords, this.#mapZoomLevel, {
+      animate: true,
+      pan: {
+        duration: 1,
+      },
+    });
+    console.log(`Navigated to ${workout.type} workout at`, workout.coords);
   }
 
   _getPosition() {
@@ -193,6 +226,8 @@ class App {
 
     this.#map.on('click', this._showForm.bind(this));
 
+    this._renderStoredWorkout();
+
     console.log('Default map loaded successfully');
   }
 
@@ -220,7 +255,20 @@ class App {
     // Remove the map event listener
     this.#map.on('click', this._showForm.bind(this));
 
+    this._renderStoredWorkout();
+
     console.log('Map loaded successfully at user location');
+  }
+
+  _renderStoredWorkout() {
+    this.#workouts.forEach(workout => {
+      this._renderWorkoutMarker(workout);
+      this._renderWorkout(workout);
+    });
+
+    if (this.#workouts.length > 0) {
+      console.log('Rendered ${this.#workouts.length} stored workouts');
+    }
   }
 
   _showForm(mapE) {
@@ -257,14 +305,14 @@ class App {
 
     // Prevent the default from submission behavior
     e.preventDefault();
- 
+
     // Store data or extract data
     const type = inputType.value;
     const distance = +inputDistance.value;
     const duration = +inputDuration.value;
     const { lat, lng } = this.#mapEvent.latlng;
     let workout;
- 
+
     // Handle running working
     if (type === 'running') {
       const cadence = +inputCadence.value;
@@ -276,10 +324,10 @@ class App {
       )
         return alert('Inputs must be positive numbers!');
 
-        // Create the running object with map coordinates and form data
+      // Create the running object with map coordinates and form data
       workout = new Running([lat, lng], distance, duration, cadence);
     }
- 
+
     if (type === 'cycling') {
       const elevation = +inputElevation.value;
 
@@ -289,18 +337,20 @@ class App {
         !allPositive(distance, duration)
       )
         return alert('Inputs must be positive numbers!');
-        // Create the running object with map coordinates and form data
+      // Create the running object with map coordinates and form data
       workout = new Cycling([lat, lng], distance, duration, elevation);
     }
- 
+
     this.#workouts.push(workout);
- 
+
     this._renderWorkoutMarker(workout);
 
     this._renderWorkout(workout);
- 
+
+    this._setLocalStorage();
+
     this._hideForm();
-    
+
     this._setLocalStorage();
   }
 
@@ -322,7 +372,7 @@ class App {
           <span class="workout__unit">min</span>
         </div>
     `;
- 
+
     if (workout.type === 'running')
       html += `
         <div class="workout__details">
@@ -336,7 +386,7 @@ class App {
           <span class="workout__unit">spm</span>
         </div>
       </li>`;
- 
+
     if (workout.type === 'cycling')
       html += `
         <div class="workout__details">
@@ -350,7 +400,7 @@ class App {
           <span class="workout__unit">m</span>
         </div>
       </li>`;
- 
+
     form.insertAdjacentHTML('afterend', html);
   }
 
@@ -370,10 +420,51 @@ class App {
         `${workout.type === 'running' ? '🏃‍♂️' : '🚴‍♀️'} ${workout.description}`
       )
       .openPopup();
- 
+
     marker.on('click', () => {
       console.log(`Navigated to ${workout.type} workout at`, workout.coords);
     });
+  }
+
+  _setLocalStorage() {
+    localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+  }
+
+  _getLocalStorage() {
+    const data = JSON.parse(localStorage.getItem('workouts'));
+    if (!data) return;
+
+    this.#workouts = data.map(work => {
+      if (work.type === 'running') {
+        const workout = new Running(
+          work.coords,
+          work.distance,
+          work.duration,
+          work.cadence
+        );
+        workout.id = work.id;
+        workout.date = new Date(work.date);
+        return workout;
+      }
+      if (work.type === 'cycling') {
+        const workout = new Cycling(
+          work.coords,
+          work.distance,
+          work.duration,
+          work.elevationGain
+        );
+        workout.id = work.id;
+        workout.date = new Date(work.date);
+        return workout;
+      }
+    });
+
+    this.#workouts.forEach(work => this._renderWorkout(work));
+  }
+
+  reset() {
+    localStorage.removeItem('workouts');
+    location.reload();
   }
 }
 
